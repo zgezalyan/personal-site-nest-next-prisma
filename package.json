@@ -16,5 +16,8 @@
   "private": "true",
   "workspaces": [
     "apps/*"
-  ]
+  ],
+  "overrides": {
+    "@nestjs/common": "^11.1.17"
+  }
 }
