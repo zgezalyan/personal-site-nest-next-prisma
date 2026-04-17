@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { apiGet } from '@/lib/api';
+import { CommentComposer } from '@/components/comment-composer';
 
 type Post = {
   id: string;
@@ -55,12 +55,7 @@ export default async function PostPage({
           )}
         </div>
 
-        <div className="mt-6 rounded-lg border p-4 text-sm text-gray-600">
-          <Link href="/login" className="underline underline-offset-4">
-            Sign in
-          </Link>{' '}
-          to leave a comment.
-        </div>
+        <CommentComposer postId={post.id} />
       </section>
     </main>
   );
