@@ -15,7 +15,7 @@ async function main() {
     });
 
     await prisma.post.upsert({
-        where: { slug: 'first-post' },
+        where: { slug: 'hello-world' },
         update: {},
         create: {
             title: 'Hello World',

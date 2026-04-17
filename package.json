@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npm -w apps/api run start:dev & npm -w apps/web run dev",
+    "predev": "kill-port 3000 3001",
+    "dev": "concurrently -n api,web -c blue,magenta \"npm -w apps/api run start:dev\" \"npm -w apps/web run dev\"",
     "lint": "npm -w apps/api run lint && npm -w apps/web run lint",
     "test": "npm -w apps/api run test",
     "build": "npm -w apps/api run build && npm -w apps/web run build"
@@ -19,5 +20,9 @@
   ],
   "overrides": {
     "@nestjs/common": "^11.1.17"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "kill-port": "^2.0.1"
   }
 }
