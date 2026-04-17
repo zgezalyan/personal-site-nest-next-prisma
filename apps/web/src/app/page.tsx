@@ -24,7 +24,7 @@ export default async function HomePage() {
         {posts.map((p) => (
           <Link
             key={p.id}
-            href={`/posts/${p.slug}`}
+            href={`/post/${p.slug}`}
             className="block rounded-lg border p-4 hover:bg-gray-50"
           >
             <div className="text-lg font-medium">{p.title}</div>

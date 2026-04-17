@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from 'bcrypt';
+import type { User } from '@prisma/client';
 import { UsersService } from "../users/users.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
+import { authCookieOptions } from "./cookie.config";
 
 @Injectable()
 export class AuthService {
@@ -24,7 +26,7 @@ export class AuthService {
             displayName: dto.displayName,
         });
 
-        return this.usersService.toPublic(user);
+        return this.issueSession(user);
     }
 
     async login(dto: LoginDto) {
@@ -34,20 +36,20 @@ export class AuthService {
         const ok = await bcrypt.compare(dto.password, user.passwordHash);
         if (!ok) throw new UnauthorizedException('Invalid credentials');
 
+        return this.issueSession(user);
+    }
+
+    private async issueSession(user: User) {
         const token = await this.jwtService.signAsync({
             sub: user.id,
             email: user.email,
             role: user.role,
         });
 
-        const cookieOptions = {
-            httpOnly: true,
-            sameSite: 'lax' as const,
-            secure: false,
-            path: '/',
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+        return {
+            user: this.usersService.toPublic(user),
+            token,
+            cookieOptions: authCookieOptions(),
         };
-
-        return { user: this.usersService.toPublic(user), token, cookieOptions };
     }
 }

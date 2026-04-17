@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { apiGet } from '@/lib/api';
 
 type Post = {
@@ -18,9 +19,10 @@ type Post = {
 export default async function PostPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const post = await apiGet<Post>(`/posts/${params.slug}`);
+  const { slug } = await params;
+  const post = await apiGet<Post>(`/posts/${slug}`);
 
   return (
     <main className="mx-auto max-w-3xl p-6">
@@ -54,7 +56,10 @@ export default async function PostPage({
         </div>
 
         <div className="mt-6 rounded-lg border p-4 text-sm text-gray-600">
-          Comment form will be added after Auth.
+          <Link href="/login" className="underline underline-offset-4">
+            Sign in
+          </Link>{' '}
+          to leave a comment.
         </div>
       </section>
     </main>
