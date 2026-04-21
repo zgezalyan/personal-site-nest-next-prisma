@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -17,6 +17,7 @@ function parseCorsOrigins(): string | string[] | boolean {
 }
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
 
@@ -40,6 +41,6 @@ async function bootstrap() {
 
   const port = Number(process.env.API_PORT ?? 3001);
   await app.listen(port);
-  console.log(`API listening on http://localhost:${port}`);
+  logger.log(`API listening on http://localhost:${port}`);
 }
 bootstrap();
