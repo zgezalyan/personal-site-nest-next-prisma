@@ -8,6 +8,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
 import { AUTH_COOKIE_NAME, buildAuthClearCookieOptions } from './cookie.config';
 import { UsersService } from '../users/users.service';
+import type { AuthUser } from './auth-user.type';
 
 @Controller('auth')
 export class AuthController {
@@ -40,7 +41,7 @@ export class AuthController {
 
     @UseGuards(JwtAuthGuard)
     @Get('me')
-    async me(@CurrentUser() user: { id: string }) {
+    async me(@CurrentUser() user: AuthUser) {
         const full = await this.usersService.findById(user.id);
         if (!full) throw new UnauthorizedException();
         return this.usersService.toPublic(full);

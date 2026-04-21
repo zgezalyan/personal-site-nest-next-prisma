@@ -3,6 +3,7 @@ import { CommentsService } from './comments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import type { AuthUser } from '../auth/auth-user.type';
 
 @Controller()
 export class CommentsController {
@@ -17,7 +18,7 @@ export class CommentsController {
   @Post('post/:postId/comments')
   create(
     @Param('postId') postId: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @Body() dto: CreateCommentDto,
   ) {
     return this.commentsService.createForPost(postId, user.id, dto.content);
@@ -27,7 +28,7 @@ export class CommentsController {
   @Delete('comments/:commentId')
   remove(
     @Param('commentId') commentId: string, 
-    @CurrentUser() user: any
+    @CurrentUser() user: AuthUser
   ) {
     return this.commentsService.softDelete(commentId, user.id).then(() => ({ message: 'Comment deleted successfully' }));
   }

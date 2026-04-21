@@ -1,5 +1,8 @@
 import { Injectable } from "@nestjs/common";
+import type { User } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+
+type PublicUser = Omit<User, 'passwordHash'>;
 
 @Injectable()
 export class UsersService {
@@ -30,7 +33,7 @@ export class UsersService {
         });
     }
 
-    toPublic(user: any) {
+    toPublic(user: User): PublicUser {
         const { passwordHash, ...rest } = user;
         return rest;
     }
