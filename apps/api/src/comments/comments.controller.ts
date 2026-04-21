@@ -26,11 +26,12 @@ export class CommentsController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':postId/comments/:commentId')
-  remove(
+  async remove(
     @Param('postId') _postId: string,
     @Param('commentId') commentId: string, 
     @CurrentUser() user: AuthUser
   ) {
-    return this.commentsService.softDelete(commentId, user.id).then(() => ({ message: 'Comment deleted successfully' }));
+    await this.commentsService.softDelete(commentId, user.id);
+    return ({ message: 'Comment deleted successfully' });
   }
 }
