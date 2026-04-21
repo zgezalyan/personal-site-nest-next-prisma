@@ -5,14 +5,20 @@ import { PostStatus } from '@prisma/client';
 @Injectable()
 export class CommentsService {
   constructor(private readonly prisma: PrismaService) {}
+  private static readonly MAX_PAGE_SIZE = 200;
 
-  listByPostId(postId: string) {
+  listByPostId(postId: string, limit: number, offset: number) {
+    const take = Math.min(Math.max(limit, 1), CommentsService.MAX_PAGE_SIZE);
+    const skip = Math.max(offset, 0);
+
     return this.prisma.comment.findMany({
       where: {
         postId,
         deletedAt: null,
       },
       orderBy: { createdAt: 'asc' },
+      take,
+      skip,
       select: {
         id: true,
         content: true,

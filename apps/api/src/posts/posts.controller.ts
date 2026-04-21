@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 
 @Controller('posts')
@@ -6,8 +6,11 @@ export class PostsController {
     constructor(private readonly postsService: PostsService) {}
 
     @Get()
-    listPublished() {
-        return this.postsService.listPublished();
+    listPublished(
+        @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+        @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
+    ) {
+        return this.postsService.listPublished(limit, offset);
     }
 
     @Get(':slug')

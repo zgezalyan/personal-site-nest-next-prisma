@@ -5,11 +5,17 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class PostsService {
     constructor(private readonly prisma: PrismaService) {}
+    private static readonly MAX_PAGE_SIZE = 100;
 
-    listPublished() {
+    listPublished(limit: number, offset: number) {
+        const take = Math.min(Math.max(limit, 1), PostsService.MAX_PAGE_SIZE);
+        const skip = Math.max(offset, 0);
+
         return this.prisma.post.findMany({
             where: { status: PostStatus.PUBLISHED },
             orderBy: { createdAt: 'desc' },
+            take,
+            skip,
             select: {
                 id: true,
                 title: true,
