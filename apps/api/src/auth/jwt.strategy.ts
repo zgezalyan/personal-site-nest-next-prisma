@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, ExtractJwt } from "passport-jwt";
 import { AUTH_COOKIE_NAME } from "./cookie.config";
@@ -9,11 +10,11 @@ function cookieExtractor(req: any): string | null {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor() {
+    constructor(config: ConfigService) {
         super({
             jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
             ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET || 'dev_secret_temporary_secret',
+            secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
         });
     }
 

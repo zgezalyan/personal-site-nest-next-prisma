@@ -1,17 +1,19 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from 'bcrypt';
 import type { User } from '@prisma/client';
 import { UsersService } from "../users/users.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
-import { authCookieOptions } from "./cookie.config";
+import { buildAuthCookieOptions } from "./cookie.config";
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
     ) {}
 
     async register(dto: RegisterDto) {
@@ -46,10 +48,13 @@ export class AuthService {
             role: user.role,
         });
 
+        const secure = this.configService.get<string>('NODE_ENV') === 'production';
+        const maxAgeMs = Number(this.configService.getOrThrow<string>('JWT_COOKIE_MAX_AGE_MS'));
+
         return {
             user: this.usersService.toPublic(user),
             token,
-            cookieOptions: authCookieOptions(),
+            cookieOptions: buildAuthCookieOptions(secure, maxAgeMs),
         };
     }
 }

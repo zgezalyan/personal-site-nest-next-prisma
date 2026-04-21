@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Post, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
-import { AUTH_COOKIE_NAME, authClearCookieOptions } from './cookie.config';
+import { AUTH_COOKIE_NAME, buildAuthClearCookieOptions } from './cookie.config';
 import { UsersService } from '../users/users.service';
 
 @Controller('auth')
@@ -13,6 +14,7 @@ export class AuthController {
     constructor(
         private readonly authService: AuthService,
         private readonly usersService: UsersService,
+        private readonly configService: ConfigService,
     ) {}
 
     @Post('register')
@@ -31,7 +33,8 @@ export class AuthController {
 
     @Post('logout')
     logout(@Res({ passthrough: true}) res: Response) {
-        res.clearCookie(AUTH_COOKIE_NAME, authClearCookieOptions());
+        const secure = this.configService.get<string>('NODE_ENV') === 'production';
+        res.clearCookie(AUTH_COOKIE_NAME, buildAuthClearCookieOptions(secure));
         return { message: 'Logged out successfully' };
     }
 

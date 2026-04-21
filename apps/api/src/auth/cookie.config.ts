@@ -2,17 +2,17 @@ import type { CookieOptions } from 'express';
 
 export const AUTH_COOKIE_NAME = 'access_token';
 
-export function authCookieOptions(): CookieOptions {
+export function buildAuthCookieOptions(secure: boolean, maxAgeMs: number): CookieOptions {
   return {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: maxAgeMs,
   };
 }
 
-export function authClearCookieOptions(): CookieOptions {
-  const { path, sameSite, secure, httpOnly } = authCookieOptions();
-  return { path, sameSite, secure, httpOnly };
+export function buildAuthClearCookieOptions(secure: boolean): CookieOptions {
+  const { path, sameSite, secure: s, httpOnly } = buildAuthCookieOptions(secure, 0);
+  return { path, sameSite, secure: s, httpOnly };
 }
