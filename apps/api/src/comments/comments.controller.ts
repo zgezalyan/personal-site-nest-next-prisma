@@ -5,17 +5,17 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import type { AuthUser } from '../auth/auth-user.type';
 
-@Controller()
+@Controller('posts')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @Get('post/:postId/comments')
+  @Get(':postId/comments')
   list(@Param('postId') postId: string) {
     return this.commentsService.listByPostId(postId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('post/:postId/comments')
+  @Post(':postId/comments')
   create(
     @Param('postId') postId: string,
     @CurrentUser() user: AuthUser,
@@ -25,8 +25,9 @@ export class CommentsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete('comments/:commentId')
+  @Delete(':postId/comments/:commentId')
   remove(
+    @Param('postId') _postId: string,
     @Param('commentId') commentId: string, 
     @CurrentUser() user: AuthUser
   ) {
