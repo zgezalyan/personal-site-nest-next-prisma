@@ -1,4 +1,8 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PostStatus } from '@prisma/client';
 
@@ -41,14 +45,20 @@ export class CommentsService {
         content: true,
         createdAt: true,
         author: { select: { displayName: true } },
-      }
+      },
     });
   }
 
   async softDelete(commentId: string, userId: string) {
-    const comment = await this.prisma.comment.findUnique({ where: { id: commentId } });
-    if (!comment || comment.deletedAt) throw new NotFoundException('Comment not found');
-    if (comment.authorId !== userId) throw new ForbiddenException('You are not allowed to delete this comment');
+    const comment = await this.prisma.comment.findUnique({
+      where: { id: commentId },
+    });
+    if (!comment || comment.deletedAt)
+      throw new NotFoundException('Comment not found');
+    if (comment.authorId !== userId)
+      throw new ForbiddenException(
+        'You are not allowed to delete this comment',
+      );
 
     return this.prisma.comment.update({
       where: { id: commentId },

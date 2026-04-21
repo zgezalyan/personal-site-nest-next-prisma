@@ -1,4 +1,15 @@
-import { Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -32,10 +43,10 @@ export class CommentsController {
   @Delete(':postId/comments/:commentId')
   async remove(
     @Param('postId') _postId: string,
-    @Param('commentId') commentId: string, 
-    @CurrentUser() user: AuthUser
+    @Param('commentId') commentId: string,
+    @CurrentUser() user: AuthUser,
   ) {
     await this.commentsService.softDelete(commentId, user.id);
-    return ({ message: 'Comment deleted successfully' });
+    return { message: 'Comment deleted successfully' };
   }
 }

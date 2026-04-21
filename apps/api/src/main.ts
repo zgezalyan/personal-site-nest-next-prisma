@@ -9,7 +9,10 @@ function parseCorsOrigins(): string | string[] | boolean {
   if (!raw) {
     return true;
   }
-  const list = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  const list = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   if (list.length === 0) {
     return true;
   }
@@ -36,7 +39,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
- 
+
   app.enableShutdownHooks();
 
   const port = Number(process.env.API_PORT ?? 3001);
