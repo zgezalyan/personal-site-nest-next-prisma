@@ -1,5 +1,6 @@
-import { apiGet } from '@/lib/api';
+import { ApiError, apiGet } from '@/lib/api';
 import { CommentComposer } from '@/components/comment-composer';
+import { notFound } from 'next/navigation';
 
 type Post = {
   id: string;
@@ -22,7 +23,24 @@ export default async function PostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await apiGet<Post>(`/posts/${slug}`);
+  let post: Post;
+
+  try {
+    post = await apiGet<Post>(`/posts/${slug}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      notFound();
+    }
+
+    return (
+      <main className="mx-auto max-w-3xl p-6">
+        <h1 className="text-2xl font-semibold">Unable to load post</h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          {error instanceof Error ? error.message : 'Something went wrong while loading this post.'}
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-3xl p-6">

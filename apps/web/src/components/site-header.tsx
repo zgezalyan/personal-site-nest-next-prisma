@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 
 export function SiteHeader() {
-    const { user, loading, logout } = useAuth();
+    const { user, loading, authError, logout } = useAuth();
 
     return (
         <header className="border-b border-gray-200 dark:border-gray-800">
@@ -13,6 +13,7 @@ export function SiteHeader() {
                     My Blog
                 </Link>
                 <nav className="flex items-center gap-4 text-sm">
+                    {authError ? <span className="text-red-600 dark:text-red-400">Auth unavailable</span> : null}
                     {loading ? (
                         <span className="text-gray-500">…</span>
                     ) : user ? (

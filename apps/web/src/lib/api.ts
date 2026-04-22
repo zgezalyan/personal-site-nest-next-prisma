@@ -13,17 +13,16 @@ export type AuthUser = {
     updatedAt: string;
 };
 
-export async function apiGet<T>(path: string): Promise<T> {
-    const response = await fetch(`${baseUrl}${path}`, {
-        credentials: 'include',
-        cache: 'no-store',
-    });
+export class ApiError extends Error {
+    status: number;
+    path: string;
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch ${path}: ${response.statusText}`);
+    constructor(path: string, status: number, message: string) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.path = path;
     }
-
-    return response.json() as Promise<T>;
 }
 
 async function parseApiErrorMessage(res: Response): Promise<string> {
@@ -40,37 +39,87 @@ async function parseApiErrorMessage(res: Response): Promise<string> {
     return res.statusText;
 }
 
-export async function fetchAuthSession(): Promise<AuthUser | null> {
-    const res = await fetch(`${baseUrl}/auth/me`, {
-        credentials: 'include',
-        cache: 'no-store',
-    });
-    if (res.status === 401) return null;
-    if (!res.ok) {
-        throw new Error(await parseApiErrorMessage(res));
+type RequestOptions = Omit<RequestInit, 'credentials'> & {
+    timeoutMs?: number;
+};
+
+async function apiRequest(path: string, options: RequestOptions = {}): Promise<Response> {
+    const { timeoutMs = 10000, ...requestInit } = options;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const res = await fetch(`${baseUrl}${path}`, {
+            credentials: 'include',
+            cache: 'no-store',
+            ...requestInit,
+            signal: controller.signal,
+        });
+
+        if (!res.ok) {
+            throw new ApiError(path, res.status, await parseApiErrorMessage(res));
+        }
+
+        return res;
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new ApiError(path, 408, 'Request timed out');
+        }
+        throw new ApiError(path, 500, 'Network request failed');
+    } finally {
+        clearTimeout(timeoutId);
     }
-    return res.json() as Promise<AuthUser>;
+}
+
+export async function apiGet<T>(path: string): Promise<T> {
+    const response = await apiRequest(path);
+    return response.json() as Promise<T>;
+}
+
+export async function fetchAuthSession(): Promise<AuthUser | null> {
+    const path = '/auth/me';
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+        const res = await fetch(`${baseUrl}${path}`, {
+            credentials: 'include',
+            cache: 'no-store',
+            signal: controller.signal,
+        });
+
+        if (res.status === 401) return null;
+        if (!res.ok) {
+            throw new ApiError(path, res.status, await parseApiErrorMessage(res));
+        }
+        return res.json() as Promise<AuthUser>;
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new ApiError(path, 408, 'Request timed out');
+        }
+        throw new ApiError(path, 500, 'Network request failed');
+    } finally {
+        clearTimeout(timeoutId);
+    }
 }
 
 export async function apiPostJson<T>(path: string, body: unknown): Promise<T> {
-    const res = await fetch(`${baseUrl}${path}`, {
+    const res = await apiRequest(path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(body),
     });
-    if (!res.ok) {
-        throw new Error(await parseApiErrorMessage(res));
-    }
     return res.json() as Promise<T>;
 }
 
 export async function apiPostEmpty(path: string): Promise<void> {
-    const res = await fetch(`${baseUrl}${path}`, {
+    await apiRequest(path, {
         method: 'POST',
-        credentials: 'include',
     });
-    if (!res.ok) {
-        throw new Error(await parseApiErrorMessage(res));
-    }
 }

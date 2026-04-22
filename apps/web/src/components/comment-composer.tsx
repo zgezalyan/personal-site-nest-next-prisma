@@ -27,7 +27,7 @@ export function CommentComposer({ postId }: { postId: string }) {
         setError(null);
         setPending(true);
         try {
-            await apiPostJson<CreatedComment>(`/post/${postId}/comments`, {
+            await apiPostJson<CreatedComment>(`/posts/${postId}/comments`, {
                 content: trimmed,
             });
             setContent('');

@@ -5,29 +5,23 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiPostJson, type AuthUser } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
+import { useAuthSubmit } from './use-auth-submit';
 
 export function LoginForm() {
     const router = useRouter();
     const { refresh } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState<string | null>(null);
-    const [pending, setPending] = useState(false);
+    const { pending, error, run } = useAuthSubmit();
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setError(null);
-        setPending(true);
-        try {
+        await run(async () => {
             await apiPostJson<AuthUser>('/auth/login', { email, password });
             await refresh();
             router.push('/');
             router.refresh();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Something went wrong');
-        } finally {
-            setPending(false);
-        }
+        });
     }
 
     return (
